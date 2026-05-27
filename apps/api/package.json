@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "dotenv -- tsx watch ./src/index.ts",
+    "dev": "dotenv -e ../../.env -- tsx watch ./src/index.ts",
     "build": "tsup",
     "lint": "eslint src/*",
-    "seed": "dotenv -- tsx ./src/seed.ts",
+    "seed": "dotenv -e ../../.env -- tsx ./src/seed.ts",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
