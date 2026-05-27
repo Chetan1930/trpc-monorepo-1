@@ -53,7 +53,7 @@ export const formRouter = router({
         themeId: z.string().uuid().nullable().optional(),
         status: z.enum(["draft", "published", "archived"]).optional(),
         expiryDate: z.string().nullable().optional(),
-        responseLimit: z.string().nullable().optional(),
+        responseLimit: z.coerce.number().int().positive().nullable().optional(),
       }),
     )
     .output(z.any())

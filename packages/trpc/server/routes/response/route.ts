@@ -19,8 +19,8 @@ export const responseRouter = router({
     )
     .output(z.any())
     .mutation(async ({ input, ctx }) => {
-      const ipAddress = (ctx as any).ip || "unknown";
-      const userAgent = (ctx as any).headers?.["user-agent"] || "unknown";
+      const ipAddress = ctx.ip ?? "unknown";
+      const userAgent = ctx.userAgent ?? "unknown";
       return responseService.submitResponse(input.formId, {
         formData: input.formData,
         respondentEmail: input.respondentEmail,

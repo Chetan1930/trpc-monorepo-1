@@ -1,6 +1,7 @@
 import { db } from "@repo/database";
 import { formResponsesTable, formsTable, usersTable } from "@repo/database/schema";
 import { eq, and, desc, count, sql } from "@repo/database";
+import { logger } from "@repo/logger";
 import NotificationService from "../notification";
 
 class ResponseService {
@@ -70,7 +71,7 @@ class ResponseService {
           formSlug: form.slug,
           respondentName: data.respondentName,
           responseId: response.id,
-        }).catch((err) => console.error("[Notification] Failed to notify creator:", err));
+        }).catch((err) => logger.error("[Notification] Failed to notify creator", { err }));
       }
 
       if (data.respondentEmail) {
@@ -78,7 +79,7 @@ class ResponseService {
           respondentEmail: data.respondentEmail,
           respondentName: data.respondentName,
           formTitle: form.title,
-        }).catch((err) => console.error("[Notification] Failed to notify respondent:", err));
+        }).catch((err) => logger.error("[Notification] Failed to notify respondent", { err }));
       }
     }
 

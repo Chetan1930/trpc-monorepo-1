@@ -6,6 +6,30 @@ import {
   formResponsesTable,
 } from "@repo/database/schema";
 import { eq, and, desc, asc, count, sql } from "@repo/database";
+import { randomBytes } from "node:crypto";
+
+/** Generate a URL-safe random suffix using cryptographically secure bytes */
+function randomSuffix(length = 8): string {
+  return randomBytes(Math.ceil(length * 0.75))
+    .toString("base64url")
+    .substring(0, length)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "x");
+}
+
+/** Convert a title to a slug base, trimming and sanitising */
+function titleToSlugBase(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")   // remove special chars
+    .replace(/\s+/g, "-")            // spaces → dashes
+    .replace(/-+/g, "-")             // collapse consecutive dashes
+    .replace(/^-|-$/g, "")           // trim leading/trailing dashes
+    .substring(0, 50)                // cap at 50 chars
+    || "form";                       // fallback if title is all special chars
+}
+
 class FormService {
   public async createForm(creatorId: string, data: {
     title: string;
@@ -13,10 +37,8 @@ class FormService {
     visibility?: "public" | "unlisted";
     themeId?: string;
   }) {
-    const slug = data.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") + "-" + Math.random().toString(36).substring(2, 8);
+    const base = titleToSlugBase(data.title);
+    const slug = `${base}-${randomSuffix(8)}`;
 
     const [form] = await db
       .insert(formsTable)
@@ -70,7 +92,7 @@ class FormService {
     themeId?: string | null;
     status?: "draft" | "published" | "archived";
     expiryDate?: string | null;
-    responseLimit?: number | string | null;
+    responseLimit?: number | null;
   }) {
     const form = await this.getFormById(formId);
     if (form.creatorId !== userId) throw new Error("Unauthorized");
@@ -81,7 +103,7 @@ class FormService {
     if (data.visibility !== undefined) updateData.visibility = data.visibility;
     if (data.themeId !== undefined) updateData.themeId = data.themeId;
     if (data.expiryDate !== undefined) updateData.expiryDate = data.expiryDate;
-    if (data.responseLimit !== undefined) updateData.responseLimit = data.responseLimit !== null && data.responseLimit !== undefined ? Number(data.responseLimit) : null;
+    if (data.responseLimit !== undefined) updateData.responseLimit = data.responseLimit ?? null;
 
     if (data.status === "published") {
       updateData.status = "published";
@@ -249,10 +271,8 @@ class FormService {
 
     const fields = await this.getFields(formId);
 
-    const slug = (form.title + "-copy-" + Math.random().toString(36).substring(2, 6))
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+    const base = titleToSlugBase(form.title);
+    const slug = `${base}-copy-${randomSuffix(6)}`;
 
     const [newForm] = await db
       .insert(formsTable)
