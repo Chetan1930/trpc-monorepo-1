@@ -58,7 +58,22 @@ class FormService {
 
   public async getFormsByUser(userId: string) {
     return db
-      .select()
+      .select({
+        id: formsTable.id,
+        title: formsTable.title,
+        description: formsTable.description,
+        slug: formsTable.slug,
+        visibility: formsTable.visibility,
+        status: formsTable.status,
+        expiryDate: formsTable.expiryDate,
+        responseLimit: formsTable.responseLimit,
+        themeId: formsTable.themeId,
+        creatorId: formsTable.creatorId,
+        createdAt: formsTable.createdAt,
+        updatedAt: formsTable.updatedAt,
+        publishedAt: formsTable.publishedAt,
+        responseCount: sql<number>`(SELECT count(*) FROM ${formResponsesTable} WHERE ${formResponsesTable.formId} = ${formsTable.id})`,
+      })
       .from(formsTable)
       .where(eq(formsTable.creatorId, userId))
       .orderBy(desc(formsTable.updatedAt));

@@ -60,6 +60,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // Check localStorage after hydration to avoid SSR mismatch
+  useEffect(() => {
+    const alreadySubmitted = localStorage.getItem(`formflow_submitted_${slug}`) === "true";
+    if (alreadySubmitted) {
+      setSubmitted(true);
+    }
+  }, [slug]);
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [responses, setResponses] = useState<Record<string, any>>({});
@@ -209,6 +217,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       }
 
       setSubmitted(true);
+      localStorage.setItem(`formflow_submitted_${slug}`, "true");
       toast.success("Response submitted successfully!");
       fireConfetti();
     } catch (err: any) {
@@ -306,7 +315,10 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = `/forms/${form.slug}`}
+                onClick={() => {
+                  localStorage.removeItem(`formflow_submitted_${form.slug}`);
+                  window.location.href = `/forms/${form.slug}`;
+                }}
               >
                 <ExternalLink className="h-3.5 w-3.5 mr-1" />
                 Submit Another Response
