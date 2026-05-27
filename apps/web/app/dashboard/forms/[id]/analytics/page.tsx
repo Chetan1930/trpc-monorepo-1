@@ -124,10 +124,10 @@ export default function AnalyticsPage() {
   const loadData = useCallback(async () => {
     try {
       const [formData, analyticsData, responsesData, fieldsData] = await Promise.all([
-        apiFetch(`/form/getById`, { method: "POST", body: JSON.stringify({ id: formId }) }),
-        apiFetch(`/response/analytics`, { method: "POST", body: JSON.stringify({ formId }) }),
-        apiFetch(`/response/list`, { method: "POST", body: JSON.stringify({ formId, limit: 100, offset: 0 }) }),
-        apiFetch(`/field/list`, { method: "POST", body: JSON.stringify({ formId }) }),
+        apiFetch(`/forms/${formId}`),
+        apiFetch(`/responses/${formId}/analytics`),
+        apiFetch(`/responses/${formId}?limit=100&offset=0`),
+        apiFetch(`/fields?formId=${formId}`),
       ]);
       setForm(formData);
       setAnalytics(analyticsData);
@@ -155,10 +155,7 @@ export default function AnalyticsPage() {
 
   const exportCSV = async () => {
     try {
-      const csv = await apiFetch(`/response/exportCSV`, {
-        method: "POST",
-        body: JSON.stringify({ formId }),
-      });
+      const csv = await apiFetch(`/responses/${formId}/export`);
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -175,10 +172,7 @@ export default function AnalyticsPage() {
   const deleteResponse = async (responseId: string) => {
     if (!confirm("Delete this response?")) return;
     try {
-      await apiFetch(`/response/delete`, {
-        method: "POST",
-        body: JSON.stringify({ id: responseId }),
-      });
+      await apiFetch(`/responses/${responseId}`, { method: "DELETE" });
       setResponses((prev) => prev.filter((r) => r.id !== responseId));
       toast.success("Response deleted");
     } catch (err: any) {

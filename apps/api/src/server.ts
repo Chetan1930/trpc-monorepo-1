@@ -81,7 +81,11 @@ const responseLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use("/api/response/submit", responseLimiter);
+// Rate limit form submissions (OpenAPI path: POST /api/responses)
+app.use("/api/responses", (req, res, next) => {
+  if (req.method === "POST") return responseLimiter(req, res, next);
+  next();
+});
 
 // Stricter rate limit for auth endpoints
 const authLimiter = rateLimit({

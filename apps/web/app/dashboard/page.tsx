@@ -65,7 +65,7 @@ export default function DashboardPage() {
 
   const loadForms = async () => {
     try {
-      const data = await apiFetch("/form/list");
+      const data = await apiFetch("/forms");
       setForms(Array.isArray(data) ? data : []);
     } catch (err: any) {
       toast.error(err.message || "Failed to load forms");
@@ -82,7 +82,7 @@ export default function DashboardPage() {
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
-      const form = await apiFetch("/form/create", {
+      const form = await apiFetch("/forms", {
         method: "POST",
         body: JSON.stringify({
           title: newTitle.trim(),
@@ -102,10 +102,7 @@ export default function DashboardPage() {
 
   const publishForm = async (formId: string) => {
     try {
-      await apiFetch("/form/publish", {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      await apiFetch(`/forms/${formId}/publish`, { method: "POST" });
       toast.success("Form published!");
       loadForms();
     } catch (err: any) {
@@ -115,10 +112,7 @@ export default function DashboardPage() {
 
   const unpublishForm = async (formId: string) => {
     try {
-      await apiFetch("/form/unpublish", {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      await apiFetch(`/forms/${formId}/unpublish`, { method: "POST" });
       toast.success("Form unpublished");
       loadForms();
     } catch (err: any) {
@@ -129,10 +123,7 @@ export default function DashboardPage() {
   const deleteForm = async (formId: string) => {
     if (!confirm("Are you sure you want to delete this form?")) return;
     try {
-      await apiFetch("/form/delete", {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      await apiFetch(`/forms/${formId}`, { method: "DELETE" });
       toast.success("Form deleted");
       loadForms();
     } catch (err: any) {
@@ -142,10 +133,7 @@ export default function DashboardPage() {
 
   const cloneForm = async (formId: string) => {
     try {
-      await apiFetch("/form/clone", {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      await apiFetch(`/forms/${formId}/clone`, { method: "POST" });
       toast.success("Form cloned!");
       loadForms();
     } catch (err: any) {
@@ -220,6 +208,7 @@ export default function DashboardPage() {
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="Enter form title..."
                     autoFocus
+                    onKeyDown={(e) => e.key === "Enter" && createForm()}
                   />
                 </div>
                 <div className="space-y-2">
@@ -250,7 +239,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex gap-3 justify-end pt-2">
-                  <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => { setShowCreate(false); setNewTitle(""); }}>Cancel</Button>
                   <Button onClick={createForm} disabled={creating || !newTitle.trim()}>
                     {creating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
                     Create
@@ -354,7 +343,7 @@ export default function DashboardPage() {
                 </Link>
                 <div className="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-500">
                   <span>{new Date(form.createdAt).toLocaleDateString()}</span>
-                  <span>{form.responseCount || 0} responses</span>
+                  <span>{form.responseCount ?? 0} responses</span>
                 </div>
               </div>
             ))}

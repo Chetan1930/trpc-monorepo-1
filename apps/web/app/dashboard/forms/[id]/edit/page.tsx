@@ -123,10 +123,7 @@ export default function FormEditorPage() {
 
   const loadForm = useCallback(async () => {
     try {
-      const data = await apiFetch(`/form/getById`, {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      const data = await apiFetch(`/forms/${formId}`);
       setForm(data);
       setTitle(data.title);
       setDescription(data.description || "");
@@ -142,10 +139,7 @@ export default function FormEditorPage() {
 
   const loadFields = useCallback(async () => {
     try {
-      const data = await apiFetch(`/field/list`, {
-        method: "POST",
-        body: JSON.stringify({ formId }),
-      });
+      const data = await apiFetch(`/fields?formId=${formId}`);
       setFields(Array.isArray(data) ? data : []);
     } catch {
       // Fields may not exist yet
@@ -154,7 +148,7 @@ export default function FormEditorPage() {
 
   const loadThemes = useCallback(async () => {
     try {
-      const data = await apiFetch(`/theme/list`);
+      const data = await apiFetch(`/themes`);
       setThemes(Array.isArray(data) ? data : []);
     } catch {
       // Themes not critical
@@ -170,18 +164,16 @@ export default function FormEditorPage() {
   const saveForm = async () => {
     setSaving(true);
     try {
-      const body: Record<string, any> = {
-        id: formId,
-        title,
-        visibility,
-      };
+      const body: Record<string, any> = { title, visibility };
       if (description) body.description = description;
-      if (responseLimit) body.responseLimit = responseLimit;
+      if (responseLimit) body.responseLimit = Number(responseLimit);
       if (expiryDate) body.expiryDate = new Date(expiryDate).toISOString();
       if (selectedThemeId) body.themeId = selectedThemeId;
+      // Explicitly clear themeId if none selected
+      if (!selectedThemeId) body.themeId = null;
 
-      await apiFetch(`/form/update`, {
-        method: "POST",
+      await apiFetch(`/forms/${formId}`, {
+        method: "PATCH",
         body: JSON.stringify(body),
       });
       toast.success("Form saved!");
@@ -195,10 +187,7 @@ export default function FormEditorPage() {
   const publishForm = async () => {
     setSaving(true);
     try {
-      await apiFetch(`/form/publish`, {
-        method: "POST",
-        body: JSON.stringify({ id: formId }),
-      });
+      await apiFetch(`/forms/${formId}/publish`, { method: "POST" });
       toast.success("Form published!");
       loadForm();
     } catch (err: any) {
@@ -210,7 +199,7 @@ export default function FormEditorPage() {
 
   const addField = async (type: FieldType) => {
     try {
-      const field = await apiFetch(`/field/add`, {
+      const field = await apiFetch(`/fields`, {
         method: "POST",
         body: JSON.stringify({
           formId,
@@ -229,22 +218,19 @@ export default function FormEditorPage() {
   const updateField = async (fieldId: string, data: Partial<Field>) => {
     setFields((prev) => prev.map((f) => (f.id === fieldId ? { ...f, ...data } : f)));
     try {
-      await apiFetch(`/field/update`, {
-        method: "POST",
-        body: JSON.stringify({ id: fieldId, ...data }),
+      await apiFetch(`/fields/${fieldId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
       });
     } catch {
-      // Optimistic update
+      // Optimistic update — silently fail, state already updated
     }
   };
 
   const deleteField = async (fieldId: string) => {
     setFields((prev) => prev.filter((f) => f.id !== fieldId));
     try {
-      await apiFetch(`/field/delete`, {
-        method: "POST",
-        body: JSON.stringify({ id: fieldId }),
-      });
+      await apiFetch(`/fields/${fieldId}`, { method: "DELETE" });
       toast.success("Field deleted");
     } catch (err: any) {
       toast.error(err.message || "Failed to delete field");
@@ -262,7 +248,7 @@ export default function FormEditorPage() {
     setFields(newFields);
 
     try {
-      await apiFetch(`/field/reorder`, {
+      await apiFetch(`/fields/reorder`, {
         method: "POST",
         body: JSON.stringify({
           formId,
@@ -300,9 +286,9 @@ export default function FormEditorPage() {
     setSelectedThemeId(themeId);
     setShowThemePicker(false);
     try {
-      await apiFetch(`/form/update`, {
-        method: "POST",
-        body: JSON.stringify({ id: formId, themeId }),
+      await apiFetch(`/forms/${formId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ themeId }),
       });
       toast.success("Theme applied!");
       loadForm();

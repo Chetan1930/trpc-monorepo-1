@@ -73,6 +73,7 @@ export const formRouter = router({
 
   // Protected: Publish form
   publish: protectedProcedure
+    .meta({ openapi: { method: "POST", path: "/forms/{id}/publish", tags: TAGS } })
     .input(z.object({ id: z.string().uuid() }))
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
@@ -81,6 +82,7 @@ export const formRouter = router({
 
   // Protected: Unpublish form
   unpublish: protectedProcedure
+    .meta({ openapi: { method: "POST", path: "/forms/{id}/unpublish", tags: TAGS } })
     .input(z.object({ id: z.string().uuid() }))
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
@@ -89,6 +91,7 @@ export const formRouter = router({
 
   // Protected: Clone form
   clone: protectedProcedure
+    .meta({ openapi: { method: "POST", path: "/forms/{id}/clone", tags: TAGS } })
     .input(z.object({ id: z.string().uuid() }))
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
@@ -110,12 +113,13 @@ export const formRouter = router({
     }),
 
   // Public: Get public forms for explore page
+  // Note: uses /public/forms path to avoid conflict with /forms/{id}
   explore: publicProcedure
-    .meta({ openapi: { method: "GET", path: "/forms/explore", tags: TAGS } })
+    .meta({ openapi: { method: "GET", path: "/public/forms", tags: TAGS } })
     .input(
       z.object({
-        limit: z.number().optional().default(20),
-        offset: z.number().optional().default(0),
+        limit: z.coerce.number().optional().default(20),
+        offset: z.coerce.number().optional().default(0),
       }),
     )
     .output(z.any())

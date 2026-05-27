@@ -19,14 +19,12 @@ export const responseRouter = router({
     )
     .output(z.any())
     .mutation(async ({ input, ctx }) => {
-      const ipAddress = ctx.ip ?? "unknown";
-      const userAgent = ctx.userAgent ?? "unknown";
       return responseService.submitResponse(input.formId, {
         formData: input.formData,
         respondentEmail: input.respondentEmail,
         respondentName: input.respondentName,
-        ipAddress,
-        userAgent,
+        ipAddress: ctx.ip,
+        userAgent: ctx.userAgent,
         timeToComplete: input.timeToComplete,
       });
     }),
@@ -37,8 +35,8 @@ export const responseRouter = router({
     .input(
       z.object({
         formId: z.string().uuid(),
-        limit: z.number().optional().default(50),
-        offset: z.number().optional().default(0),
+        limit: z.coerce.number().optional().default(50),
+        offset: z.coerce.number().optional().default(0),
       }),
     )
     .output(z.any())
@@ -48,6 +46,7 @@ export const responseRouter = router({
 
   // Protected: Get response count
   count: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/responses/{formId}/count", tags: TAGS } })
     .input(z.object({ formId: z.string().uuid() }))
     .output(z.any())
     .query(async ({ ctx, input }) => {
@@ -56,6 +55,7 @@ export const responseRouter = router({
 
   // Protected: Get analytics
   analytics: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/responses/{formId}/analytics", tags: TAGS } })
     .input(z.object({ formId: z.string().uuid() }))
     .output(z.any())
     .query(async ({ ctx, input }) => {
@@ -64,6 +64,7 @@ export const responseRouter = router({
 
   // Protected: Delete a response
   delete: protectedProcedure
+    .meta({ openapi: { method: "DELETE", path: "/responses/{id}", tags: TAGS } })
     .input(z.object({ id: z.string().uuid() }))
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
@@ -72,6 +73,7 @@ export const responseRouter = router({
 
   // Protected: Export responses as CSV
   exportCSV: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/responses/{formId}/export", tags: TAGS } })
     .input(z.object({ formId: z.string().uuid() }))
     .output(z.string())
     .query(async ({ ctx, input }) => {

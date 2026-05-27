@@ -27,10 +27,9 @@ export default function ExplorePage() {
   useEffect(() => {
     const loadForms = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/form/explore`, {
-          method: "POST",
+        const res = await fetch(`${API_URL}/api/public/forms?limit=50&offset=0`, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ limit: 50, offset: 0 }),
         });
         const data = await res.json();
         setForms(Array.isArray(data) ? data : []);

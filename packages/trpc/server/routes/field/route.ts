@@ -7,6 +7,7 @@ const TAGS = ["Form Fields"];
 export const fieldRouter = router({
   // Get fields for a form
   list: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/fields", tags: TAGS } })
     .input(z.object({ formId: z.string().uuid() }))
     .output(z.any())
     .query(async ({ ctx, input }) => {
@@ -17,6 +18,7 @@ export const fieldRouter = router({
 
   // Add a field
   add: protectedProcedure
+    .meta({ openapi: { method: "POST", path: "/fields", tags: TAGS } })
     .input(
       z.object({
         formId: z.string().uuid(),
@@ -48,6 +50,7 @@ export const fieldRouter = router({
 
   // Update a field
   update: protectedProcedure
+    .meta({ openapi: { method: "PATCH", path: "/fields/{id}", tags: TAGS } })
     .input(
       z.object({
         id: z.string().uuid(),
@@ -68,6 +71,7 @@ export const fieldRouter = router({
 
   // Delete a field
   delete: protectedProcedure
+    .meta({ openapi: { method: "DELETE", path: "/fields/{id}", tags: TAGS } })
     .input(z.object({ id: z.string().uuid() }))
     .output(z.any())
     .mutation(async ({ ctx, input }) => {
@@ -76,6 +80,7 @@ export const fieldRouter = router({
 
   // Reorder fields
   reorder: protectedProcedure
+    .meta({ openapi: { method: "POST", path: "/fields/reorder", tags: TAGS } })
     .input(
       z.object({
         formId: z.string().uuid(),

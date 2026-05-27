@@ -70,10 +70,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   useEffect(() => {
     const loadForm = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/form/getBySlug`, {
-          method: "POST",
+        const res = await fetch(`${API_URL}/api/forms/public/${slug}`, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug }),
         });
         if (!res.ok) {
           const err = await res.json();
@@ -187,7 +186,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/response/submit`, {
+      const res = await fetch(`${API_URL}/api/responses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
